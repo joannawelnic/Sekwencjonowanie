@@ -1,0 +1,134 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <sstream>
+using namespace std;
+// Inicjalizacja wektora listy nastepników
+vector<int> G[20];
+int iloscW;
+
+
+void StworzGraf(fstream &file) {
+	string linia;
+	while(getline(file, linia)) {;
+		stringstream strumien;
+		strumien << linia;
+
+		int nastepnik = 1;
+		int wierzcholek = 1;
+		char separator;
+		strumien >> wierzcholek >> separator;
+		while (strumien >> nastepnik) {
+			G[wierzcholek].push_back(nastepnik);
+		}
+		iloscW = wierzcholek;
+	}
+}
+
+void WypiszNastepnikow() {
+	// Wypisanie listy nastepników
+	for (int i = 1; i <= iloscW; i++) {
+		cout << "Nastepnicy wierzcholka " << i << ": ";
+		for (int j = 0; j < G[i].size(); j++) {
+			cout << G[i][j] << " indeks( " << i << " " << j << ")";
+		}
+		cout << endl;
+	}
+}
+
+void PrzeksztalcGraf() {
+	vector<pair<int, int>> zbiorLukow;
+
+	// Dodawanie łuków do zbioru
+	for (int i = 1; i <= iloscW; i++) {
+		zbiorLukow.push_back(make_pair(i * 2 - 1, i * 2));
+	}
+
+	for (int i = 0; i < iloscW; i++) {
+		cout << zbiorLukow[i].first << " " << zbiorLukow[i].second << endl;
+	}
+
+	for (int i = 1; i <= iloscW; i++) {
+		if (!G[i].empty()) {              //jeśli wierzcholek ma nastepnikow
+			for (int j = 0; j < G[i].size(); j++) {
+				//cout << G[i][j] << " | " << zbiorLukow[i-1].second << " " << zbiorLukow[G[i][j] - 1].first << " " << endl;
+				if (zbiorLukow[i-1].second < zbiorLukow[G[i][j] - 1].first) {
+					zbiorLukow[G[i][j] - 1].first = zbiorLukow[i-1].second;
+				}
+				else {
+					zbiorLukow[i - 1].second = zbiorLukow[G[i][j] - 1].first;
+				}
+			}
+		}
+	}
+
+
+	cout << endl;
+	for (int i = 0; i < iloscW; i++) {
+		cout << zbiorLukow[i].first << " " << zbiorLukow[i].second << endl;
+	}
+
+	vector<int> W[20];
+	for (int i = 0; i < iloscW; i++) {
+		W[zbiorLukow[i].first - 1].push_back(zbiorLukow[i].second);
+	}
+
+	for (int i = 0; i < iloscW; i++) {
+		cout << "Nastepnicy wierzcholka " << i+1 << ": ";
+		for (int j = 0; j < W[i].size(); j++) {
+			cout << W[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+//
+//void PrzeksztalcGraf() {
+//	vector<pair<int, int>> zbiorLukow;
+//
+//	// Dodawanie łuków do zbioru
+//	for (int i = 1; i <= iloscW; i++) {
+//		zbiorLukow.push_back(make_pair(i, i + 1));
+//		cout << "Zbior lukow: " << zbiorLukow[i-1].first << ", " << zbiorLukow[i-1].second << endl;
+//	}
+//
+//	for (int i = 1; i <= iloscW; i++) {
+//		if (!G[i].empty()) { // Sprawdzamy, czy wierzchołek ma następników
+//			for (int j = 0; j < G[i].size(); j++) {  //idziemy po nastepnnikach kazdego wierzcholka
+//				// Znajdujemy odpowiednie pary łuków w zbiorze
+//				int indeksLukuG = G[i][j]-1;
+//				pair<int, int>& lukGH = zbiorLukow[indeksLukuG];
+//				pair<int, int>& lukGH_i = zbiorLukow[i - 1];
+//
+//				// Przeindeksowanie wierzchołków zgodnie z opisem
+//				lukGH.first = lukGH_i.second;
+//
+//				// Wyświetlanie powstałych łuków
+//				cout << "Luk w grafie H: (" << lukGH.first << ", " << lukGH.second << ")" << endl;
+//			}
+//		}
+//	}
+//}
+
+
+
+
+int main() {
+
+	fstream file;
+	file.open("graf.txt", ios::in);
+	if (!file) {
+		cout << "Nie mozna otworzyc pliku!";
+		return 1;
+	}
+
+
+	StworzGraf(file);
+
+	file.close(); // Zamkniecie pliku
+
+	WypiszNastepnikow();
+
+	PrzeksztalcGraf();
+
+	return 0;
+}
